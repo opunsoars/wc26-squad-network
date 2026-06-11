@@ -9,9 +9,9 @@ import structlog
 
 logger = structlog.get_logger()
 
-# A realistic desktop browser UA: Transfermarkt serves an interstitial / blocks
-# requests that advertise a non-browser User-Agent, so we present as Chrome.
-_DEFAULT_HEADERS = {
+# Transfermarkt blocks non-browser UAs; Wikipedia blocks fake-browser UAs and
+# prefers honest bots with contact info. Use domain-appropriate headers.
+_CHROME_HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
         "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
@@ -21,6 +21,21 @@ _DEFAULT_HEADERS = {
         "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
     ),
 }
+
+_WIKI_HEADERS = {
+    "User-Agent": (
+        "wc26-squad-network/0.1 (https://github.com/opunsoars/wc26-squad-network; "
+        "personal analytics project)"
+    ),
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept": "text/html,application/xhtml+xml,*/*;q=0.8",
+}
+
+
+def _headers_for(url: str) -> dict[str, str]:
+    if "wikipedia.org" in url:
+        return _WIKI_HEADERS
+    return _CHROME_HEADERS
 
 
 class Scraper:
@@ -60,7 +75,7 @@ class Scraper:
             time.sleep(self._delay - elapsed)
 
         logger.info("fetching", url=url)
-        with httpx.Client(headers=_DEFAULT_HEADERS, follow_redirects=True, timeout=30) as client:
+        with httpx.Client(headers=_headers_for(url), follow_redirects=True, timeout=30) as client:
             response = client.get(url)
             response.raise_for_status()
 
