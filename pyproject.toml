@@ -49,6 +49,10 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 strict = true
 python_version = "3.11"
 
+[[tool.mypy.overrides]]
+module = "duckdb"
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "--cov=src/wc26 --cov-report=term-missing"
