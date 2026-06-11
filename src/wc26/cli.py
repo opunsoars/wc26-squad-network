@@ -11,73 +11,83 @@ import structlog
 import typer
 
 from wc26.config import RAW_CACHE_DIR, TOURNAMENT_DATE
-from wc26.models import MatchLog, Player
 from wc26.pipeline.matchlogs import fetch_player_matchlogs
 from wc26.pipeline.metrics import build_squad_graph, compute_freshness, compute_squad_metrics
 from wc26.pipeline.squads import build_players_dataset
 from wc26.scraper import Scraper
+from wc26.store import Store
 
 app = typer.Typer(help="WC26 squad freshness & familiarity pipeline")
 logger = structlog.get_logger()
+
+_DEFAULT_DB = "data/wc26.duckdb"
 
 
 @app.command()
 def squads(
     cache_dir: str = typer.Option(RAW_CACHE_DIR, help="Raw HTML cache dir"),
-    out: str = typer.Option("data/players.parquet", help="Output parquet path"),
+    db: str = typer.Option(_DEFAULT_DB, help="DuckDB file path"),
 ) -> None:
-    """Scrape squad lists and resolve Transfermarkt IDs."""
+    """Scrape squad lists, resolve Transfermarkt IDs, and save to DuckDB."""
     scraper = Scraper(cache_dir=cache_dir)
     players = build_players_dataset(scraper)
-    df = pd.DataFrame([p.model_dump() for p in players])
-    pathlib.Path(out).parent.mkdir(parents=True, exist_ok=True)
-    df.to_parquet(out, index=False)
-    df.to_csv(out.replace(".parquet", ".csv"), index=False)
-    typer.echo(f"Saved {len(players)} players to {out}")
+    store = Store(db)
+    store.upsert_players(players)
+    store.close()
+    typer.echo(f"Saved {len(players)} players to {db}")
 
 
 @app.command()
 def matchlogs(
-    players_file: str = typer.Option("data/players.parquet", help="Players parquet"),
     cache_dir: str = typer.Option(RAW_CACHE_DIR, help="Raw HTML cache dir"),
-    out: str = typer.Option("data/player_matches.parquet", help="Output parquet path"),
-    headless: bool = typer.Option(True, help="Run browser headless"),
+    db: str = typer.Option(_DEFAULT_DB, help="DuckDB file path"),
+    headless: bool = typer.Option(True, help="Run Chromium headless"),
+    resume: bool = typer.Option(False, "--resume", help="Skip players already in DB"),
 ) -> None:
-    """Render TM performance pages with Playwright and parse match logs."""
-    df_players = pd.read_parquet(players_file)
-    all_players = [Player(**row) for row in df_players.to_dict(orient="records")]  # type: ignore[arg-type]
+    """Render TM performance pages and append match logs to DuckDB.
 
-    all_logs: list[MatchLog] = []
-    for player in all_players:
+    Use --resume to continue an interrupted run without re-scraping
+    players whose logs are already stored.
+    """
+    store = Store(db)
+    all_players = store.all_players()
+
+    if resume:
+        done = store.processed_tm_ids()
+        players = [p for p in all_players if p.tm_id not in done]
+        typer.echo(f"Resuming: {len(done)} already done, {len(players)} remaining")
+    else:
+        players = all_players
+
+    total_new = 0
+    for i, player in enumerate(players, 1):
         logs = fetch_player_matchlogs(player, cache_dir=cache_dir, headless=headless)
-        all_logs.extend(logs)
+        if logs:
+            store.append_match_logs(logs)
+            total_new += len(logs)
+        typer.echo(f"[{i}/{len(players)}] {player.name} ({player.squad}): {len(logs)} rows")
 
-    df = pd.DataFrame([m.model_dump() for m in all_logs])
-    pathlib.Path(out).parent.mkdir(parents=True, exist_ok=True)
-    df.to_parquet(out, index=False)
-    df.to_csv(out.replace(".parquet", ".csv"), index=False)
-    typer.echo(f"Saved {len(all_logs)} match logs to {out}")
+    store.close()
+    typer.echo(f"Done. {total_new} new match-log rows written to {db}")
 
 
 @app.command()
 def metrics(
-    players_file: str = typer.Option("data/players.parquet"),
-    matchlogs_file: str = typer.Option("data/player_matches.parquet"),
+    db: str = typer.Option(_DEFAULT_DB, help="DuckDB file path"),
     out_dir: str = typer.Option("site/data", help="JSON output directory"),
 ) -> None:
     """Compute freshness + network metrics and write site JSON."""
-    df_players = pd.read_parquet(players_file)
-    df_logs = pd.read_parquet(matchlogs_file)
-    df_logs["date"] = pd.to_datetime(df_logs["date"]).dt.date
+    store = Store(db)
+    all_players = store.all_players()
+    all_logs = store.all_match_logs()
+    store.close()
 
-    players_by_squad: dict[str, list[Player]] = {}
-    for _, row in df_players.iterrows():
-        p = Player(**row.to_dict())  # type: ignore[arg-type]
+    players_by_squad: dict[str, list[Any]] = {}
+    for p in all_players:
         players_by_squad.setdefault(p.squad, []).append(p)
 
-    logs_all = [MatchLog(**row) for row in df_logs.to_dict(orient="records")]  # type: ignore[arg-type]
-    logs_by_player: dict[str, list[MatchLog]] = {}
-    for log in logs_all:
+    logs_by_player: dict[str, list[Any]] = {}
+    for log in all_logs:
         logs_by_player.setdefault(log.player_tm_id, []).append(log)
 
     out_path = pathlib.Path(out_dir)
@@ -149,23 +159,43 @@ def metrics(
     typer.echo(f"JSON written to {out_dir}: {len(summary_squads)} squads")
 
 
+@app.command()
+def export(
+    db: str = typer.Option(_DEFAULT_DB, help="DuckDB file path"),
+    out_dir: str = typer.Option("data", help="Output directory for parquet/CSV files"),
+) -> None:
+    """Export DuckDB contents to parquet + CSV for committing to the repo."""
+    store = Store(db)
+    players = store.all_players()
+    logs = store.all_match_logs()
+    store.close()
+
+    out = pathlib.Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+
+    df_players = pd.DataFrame([p.model_dump() for p in players])
+    df_players.to_parquet(out / "players.parquet", index=False)
+    df_players.to_csv(out / "players.csv", index=False)
+
+    df_logs = pd.DataFrame([m.model_dump() for m in logs])
+    df_logs.to_parquet(out / "player_matches.parquet", index=False)
+    df_logs.to_csv(out / "player_matches.csv", index=False)
+
+    typer.echo(f"Exported {len(players)} players and {len(logs)} match logs to {out_dir}/")
+
+
 @app.command(name="all")
 def run_all(
     cache_dir: str = typer.Option(RAW_CACHE_DIR),
+    db: str = typer.Option(_DEFAULT_DB),
+    resume: bool = typer.Option(False, "--resume"),
 ) -> None:
-    """Run all pipeline stages in order."""
+    """Run all pipeline stages in order (squads → matchlogs → metrics → export)."""
     typer.echo("Running: squads")
-    squads(cache_dir=cache_dir, out="data/players.parquet")
+    squads(cache_dir=cache_dir, db=db)
     typer.echo("Running: matchlogs")
-    matchlogs(
-        players_file="data/players.parquet",
-        cache_dir=cache_dir,
-        out="data/player_matches.parquet",
-        headless=True,
-    )
+    matchlogs(cache_dir=cache_dir, db=db, headless=True, resume=resume)
     typer.echo("Running: metrics")
-    metrics(
-        players_file="data/players.parquet",
-        matchlogs_file="data/player_matches.parquet",
-        out_dir="site/data",
-    )
+    metrics(db=db, out_dir="site/data")
+    typer.echo("Running: export")
+    export(db=db, out_dir="data")
