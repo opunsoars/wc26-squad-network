@@ -23,6 +23,23 @@ logger = structlog.get_logger()
 
 _DEFAULT_DB = "data/wc26.duckdb"
 
+_SQUAD_FLAGS: dict[str, str] = {
+    "Algeria": "🇩🇿", "Argentina": "🇦🇷", "Australia": "🇦🇺", "Austria": "🇦🇹",
+    "Belgium": "🇧🇪", "Bosnia and Herzegovina": "🇧🇦", "Brazil": "🇧🇷", "Canada": "🇨🇦",
+    "Cape Verde": "🇨🇻", "Chile": "🇨🇱", "Colombia": "🇨🇴", "Croatia": "🇭🇷",
+    "Curaçao": "🇨🇼", "Czech Republic": "🇨🇿", "DR Congo": "🇨🇩", "Ecuador": "🇪🇨",
+    "Egypt": "🇪🇬", "England": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "France": "🇫🇷", "Germany": "🇩🇪",
+    "Ghana": "🇬🇭", "Haiti": "🇭🇹", "Honduras": "🇭🇳", "Iran": "🇮🇷",
+    "Iraq": "🇮🇶", "Italy": "🇮🇹", "Ivory Coast": "🇨🇮", "Japan": "🇯🇵",
+    "Jordan": "🇯🇴", "Mexico": "🇲🇽", "Morocco": "🇲🇦", "Netherlands": "🇳🇱",
+    "New Zealand": "🇳🇿", "Nigeria": "🇳🇬", "Norway": "🇳🇴", "Panama": "🇵🇦",
+    "Paraguay": "🇵🇾", "Peru": "🇵🇪", "Portugal": "🇵🇹", "Qatar": "🇶🇦",
+    "Saudi Arabia": "🇸🇦", "Scotland": "🏴󠁧󠁢󠁳󠁣󠁴󠁿", "Senegal": "🇸🇳", "Serbia": "🇷🇸",
+    "South Africa": "🇿🇦", "South Korea": "🇰🇷", "Spain": "🇪🇸", "Sweden": "🇸🇪",
+    "Switzerland": "🇨🇭", "Tunisia": "🇹🇳", "Turkey": "🇹🇷", "Ukraine": "🇺🇦",
+    "United States": "🇺🇸", "Uruguay": "🇺🇾", "Uzbekistan": "🇺🇿", "Wales": "🏴󠁧󠁢󠁷󠁬󠁳󠁿",
+}
+
 
 @app.command()
 def squads(
@@ -126,8 +143,10 @@ def metrics(
         ]
 
         team_code = squad.lower().replace(" ", "_")
+        flag = _SQUAD_FLAGS.get(squad, "")
         team_json: dict[str, Any] = {
             "squad": squad,
+            "flag": flag,
             "metrics": sq_metrics.model_dump(),
             "players": player_freshness,
             "edges": edges,
@@ -140,6 +159,7 @@ def metrics(
             {
                 "squad": squad,
                 "team_code": team_code,
+                "flag": flag,
                 "density": sq_metrics.density,
                 "clustering": sq_metrics.clustering,
                 "avg_freshness_minutes": (

@@ -45,14 +45,14 @@ function renderNetwork(data) {
   const maxVal = d3.max(links, d => d.value) || 1;
   const maxFresh = d3.max(nodes, d => d.freshness) || 1;
 
-  const strokeScale = d3.scalePow().exponent(0.5).domain([0, maxVal]).range([0.5, 4]);
+  const strokeScale = d3.scalePow().exponent(0.5).domain([0, maxVal]).range([0.8, 5]);
   const rScale = d3.scaleSqrt().domain([0, maxFresh]).range([5, 16]);
-  const opacityScale = d3.scaleLinear().domain([0, maxVal]).range([0.06, 0.45]);
+  const opacityScale = d3.scaleLinear().domain([0, maxVal]).range([0.18, 0.7]);
 
   // Position colours: muted, editorial palette
   const posColor  = { GK: "#d48b07", DF: "#1a5fa8", MF: "#2d7a3f", FW: "#c0362c" };
   const posLabel  = { GK: "Goalkeeper", DF: "Defender", MF: "Midfielder", FW: "Forward" };
-  const edgeColor = "#b0aca4";
+  const edgeColor = "#6e6a62";
   const edgeHl    = "#d4380d";
 
   const connected = new Set(links.flatMap(l => [l.source, l.target]));
@@ -90,17 +90,17 @@ function renderNetwork(data) {
     .attr("stroke-width", 1.5);
 
   node.append("text")
-    .attr("dy", "0.35em")
+    .attr("dy", d => rScale(d.freshness) + 11)
     .attr("text-anchor", "middle")
-    .style("font-size", d => rScale(d.freshness) > 10 ? "8px" : "0")
-    .style("fill", "#ffffff")
+    .style("font-size", "9px")
+    .style("fill", "#1a1917")
     .style("font-family", "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif")
-    .style("font-weight", "700")
+    .style("font-weight", "600")
     .style("pointer-events", "none")
+    .style("text-shadow", "0 1px 2px #faf9f7, 0 -1px 2px #faf9f7, 1px 0 2px #faf9f7, -1px 0 2px #faf9f7")
     .text(d => {
       const parts = d.name.trim().split(/\s+/);
-      const last  = parts[parts.length - 1];
-      return last.length > 6 ? last.slice(0, 6) : last;
+      return parts[parts.length - 1];
     });
 
   // Tooltip
