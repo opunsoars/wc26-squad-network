@@ -18,6 +18,7 @@ dependencies = [
     "typer>=0.12",
     "rapidfuzz>=3.9",
     "playwright>=1.60.0",
+    "duckdb>=1.0",
 ]
 
 [project.scripts]

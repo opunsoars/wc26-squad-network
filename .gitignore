@@ -8,3 +8,5 @@ __pycache__/
 htmlcov/
 dist/
 .venv/
+data/wc26.duckdb
+data/wc26.duckdb.wal
