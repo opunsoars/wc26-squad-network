@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WC26 Squad Freshness &amp; Familiarity</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <h1>World Cup 2026 — Squad Freshness &amp; Familiarity</h1>
+    <p>Minutes played in the last 365 days &amp; on-pitch co-play networks for all 48 squads</p>
+  </header>
+  <main>
+    <div class="chart-container">
+      <div class="section-title">Squad Freshness vs Network Density</div>
+      <svg id="scatter" width="860" height="400"></svg>
+    </div>
+    <div class="chart-container">
+      <div class="section-title">All Squads — Average Player Minutes (Last 365 Days)</div>
+      <svg id="freshness-bar" width="860" height="420"></svg>
+    </div>
+    <div class="section-title">Browse by Squad</div>
+    <div class="squad-grid" id="squad-grid"></div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <script src="js/overview.js"></script>
+</body>
+</html>

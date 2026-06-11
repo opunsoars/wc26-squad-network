@@ -1,0 +1,32 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; background: #0d1117; color: #e6edf3; line-height: 1.5; }
+a { color: #58a6ff; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+header { padding: 1.5rem 2rem; border-bottom: 1px solid #30363d; }
+header h1 { font-size: 1.4rem; font-weight: 600; }
+header p { color: #8b949e; font-size: 0.9rem; margin-top: 0.25rem; }
+
+main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+.section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: #e6edf3; }
+
+.chart-container { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 1.5rem; margin-bottom: 2rem; }
+
+.bar rect { rx: 3; }
+.bar text { font-size: 11px; fill: #8b949e; }
+.axis text { fill: #8b949e; font-size: 11px; }
+.axis path, .axis line { stroke: #30363d; }
+
+.squad-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+.squad-card { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 1rem; cursor: pointer; transition: border-color 0.15s; }
+.squad-card:hover { border-color: #58a6ff; }
+.squad-card .name { font-weight: 600; margin-bottom: 0.25rem; }
+.squad-card .stat { font-size: 0.8rem; color: #8b949e; }
+
+.network-svg { width: 100%; height: 500px; }
+.network-svg .node circle { stroke: #30363d; stroke-width: 1; }
+.network-svg .node text { font-size: 10px; fill: #e6edf3; pointer-events: none; }
+.network-svg .link { stroke: #58a6ff; stroke-opacity: 0.4; }
+
+.back-link { display: inline-block; margin-bottom: 1.5rem; color: #8b949e; font-size: 0.9rem; }
