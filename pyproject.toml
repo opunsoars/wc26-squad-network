@@ -25,8 +25,8 @@ wc26 = "wc26.cli:app"
 [tool.hatch.build.targets.wheel]
 packages = ["src/wc26"]
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "pytest>=8.0",
     "pytest-cov>=5.0",
     "ruff>=0.4",
