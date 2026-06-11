@@ -1,32 +1,123 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: system-ui, sans-serif; background: #0d1117; color: #e6edf3; line-height: 1.5; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  background: #0d1117;
+  color: #e6edf3;
+  line-height: 1.5;
+}
+
 a { color: #58a6ff; text-decoration: none; }
 a:hover { text-decoration: underline; }
 
-header { padding: 1.5rem 2rem; border-bottom: 1px solid #30363d; }
-header h1 { font-size: 1.4rem; font-weight: 600; }
-header p { color: #8b949e; font-size: 0.9rem; margin-top: 0.25rem; }
+/* ── Header ─────────────────────────────────────────────────────────────────── */
+header {
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid #21262d;
+  background: #010409;
+}
+header h1 { font-size: 1.3rem; font-weight: 600; }
+header p { color: #8b949e; font-size: 0.85rem; margin-top: 0.2rem; }
+header strong { color: #e6edf3; }
 
-main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+/* ── Layout ─────────────────────────────────────────────────────────────────── */
+main { max-width: 1200px; margin: 0 auto; padding: 1.5rem 2rem 3rem; }
 
-.section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: #e6edf3; }
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #c9d1d9;
+}
 
-.chart-container { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 1.5rem; margin-bottom: 2rem; }
+.chart-container {
+  background: #161b22;
+  border: 1px solid #21262d;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.75rem;
+  overflow: hidden;
+}
 
-.bar rect { rx: 3; }
-.bar text { font-size: 11px; fill: #8b949e; }
+/* ── Axes ───────────────────────────────────────────────────────────────────── */
 .axis text { fill: #8b949e; font-size: 11px; }
 .axis path, .axis line { stroke: #30363d; }
 
-.squad-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
-.squad-card { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 1rem; cursor: pointer; transition: border-color 0.15s; }
-.squad-card:hover { border-color: #58a6ff; }
-.squad-card .name { font-weight: 600; margin-bottom: 0.25rem; }
-.squad-card .stat { font-size: 0.8rem; color: #8b949e; }
+/* ── Back link ──────────────────────────────────────────────────────────────── */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 1.25rem;
+  color: #8b949e;
+  font-size: 0.85rem;
+  transition: color 0.15s;
+}
+.back-link:hover { color: #58a6ff; text-decoration: none; }
 
-.network-svg { width: 100%; height: 500px; }
-.network-svg .node circle { stroke: #30363d; stroke-width: 1; }
-.network-svg .node text { font-size: 10px; fill: #e6edf3; pointer-events: none; }
-.network-svg .link { stroke: #58a6ff; stroke-opacity: 0.4; }
+/* ── Squad grid cards ───────────────────────────────────────────────────────── */
+.squad-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 0.75rem;
+}
 
-.back-link { display: inline-block; margin-bottom: 1.5rem; color: #8b949e; font-size: 0.9rem; }
+.squad-card {
+  background: #0d1117;
+  border: 1px solid #21262d;
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s;
+}
+.squad-card:hover {
+  border-color: #58a6ff;
+  transform: translateY(-1px);
+}
+
+.card-rank {
+  font-size: 0.7rem;
+  color: #484f58;
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+.card-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  color: #e6edf3;
+}
+.card-bar-bg {
+  height: 4px;
+  background: #21262d;
+  border-radius: 2px;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+}
+.card-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+.card-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #8b949e;
+}
+
+/* ── Network SVG ────────────────────────────────────────────────────────────── */
+.network-svg {
+  width: 100%;
+  display: block;
+}
+
+.network-svg .node circle {
+  stroke: #0d1117;
+  stroke-width: 1.5;
+}
+.network-svg .node text {
+  pointer-events: none;
+}
+
+/* ── Freshness bars SVG ─────────────────────────────────────────────────────── */
+#freshness-bars { display: block; width: 100%; overflow: visible; }
