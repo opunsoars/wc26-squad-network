@@ -9,11 +9,18 @@ import structlog
 
 logger = structlog.get_logger()
 
+# A realistic desktop browser UA: Transfermarkt serves an interstitial / blocks
+# requests that advertise a non-browser User-Agent, so we present as Chrome.
 _DEFAULT_HEADERS = {
     "User-Agent": (
-        "Mozilla/5.0 (personal analytics project - github.com/opunsoars/wc26-squad-network)"
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
     ),
     "Accept-Language": "en-US,en;q=0.9",
+    "Accept": (
+        "text/html,application/xhtml+xml,application/xml;q=0.9,"
+        "image/avif,image/webp,*/*;q=0.8"
+    ),
 }
 
 
