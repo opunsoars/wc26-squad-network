@@ -79,11 +79,7 @@ def _parse_position(cell: Tag) -> str:
         One of "GK", "DF", "MF", "FW", or "?" if unrecognised.
     """
     link = cell.find("a")
-    raw = (
-        link.get_text(strip=True)
-        if link
-        else _POS_STRIP_RE.sub("", cell.get_text(strip=True))
-    )
+    raw = link.get_text(strip=True) if link else _POS_STRIP_RE.sub("", cell.get_text(strip=True))
     return _POSITION_MAP.get(raw, "?")
 
 
