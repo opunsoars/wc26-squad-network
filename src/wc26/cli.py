@@ -46,18 +46,17 @@ def matchlogs(
 ) -> None:
     """Fetch TM match logs via JSON API and append to DuckDB.
 
-    Writes to DuckDB after every player so progress is queryable at any time.
+    Opens DuckDB only long enough to write after each player, so the file is
+    never locked between fetches and is always queryable from another process.
     Use --resume to skip players whose logs are already stored.
     """
-    store = Store(db)
-    all_players = store.all_players()
+    with Store(db) as store:
+        all_players = store.all_players()
+        done_ids = store.processed_tm_ids() if resume else set()
 
+    players = [p for p in all_players if p.tm_id not in done_ids]
     if resume:
-        done = store.processed_tm_ids()
-        players = [p for p in all_players if p.tm_id not in done]
-        typer.echo(f"Resuming: {len(done)} already done, {len(players)} remaining")
-    else:
-        players = all_players
+        typer.echo(f"Resuming: {len(done_ids)} already done, {len(players)} remaining")
 
     total_new = 0
     with tqdm.tqdm(players, unit="player", desc="match logs") as bar:
@@ -65,10 +64,10 @@ def matchlogs(
             bar.set_postfix_str(f"{player.name} ({player.squad})")
             logs = fetch_player_matchlogs(player, cache_dir=cache_dir)
             if logs:
-                store.append_match_logs(logs)
+                with Store(db) as store:
+                    store.append_match_logs(logs)
                 total_new += len(logs)
 
-    store.close()
     typer.echo(f"Done. {total_new} new match-log rows written to {db}")
 
 

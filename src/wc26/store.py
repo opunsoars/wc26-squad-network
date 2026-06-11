@@ -180,3 +180,10 @@ class Store:
         """Close the DuckDB connection."""
         self._conn.close()
         logger.debug("store_closed")
+
+    def __enter__(self) -> Store:
+        """Support ``with Store(...) as store:`` for short-lived open/close."""
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.close()
