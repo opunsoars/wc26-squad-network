@@ -28,18 +28,27 @@ so this project is built player-centric on **Transfermarkt**:
 - **Squads:** Wikipedia "2026 FIFA World Cup squads" page → 48 final squad
   lists. Each player resolved to a Transfermarkt player ID via TM search +
   fuzzy name matching, with a manual override file for mismatches (expect ~5%).
-- **Match logs:** each player's TM performance pages for seasons
+- **Match logs:** each player's TM detailed performance pages for seasons
   2023/24, 2024/25, 2025/26 → one row per player-match: match ID, date,
-  competition, team, opponent, minutes played, sub-on minute, sub-off minute.
+  competition, team, opponent, minutes played. **Rendered with Playwright** —
+  TM migrated these pages to JS web components
+  (`<tm-player-performance-table-new>`), so there is no server-side `<table>`
+  and `httpx` alone cannot reach per-match rows (verified 2026-06-11). The
+  headless browser accepts the consent banner, waits for the table to populate,
+  then we parse the rendered `table.items`.
+- **No sub-minute data exists** on any source (TM, FBref, ceapi) — only total
+  minutes per match. Co-play therefore uses **shared appearances**, not interval
+  overlap: two players co-played a match iff both have an appearance row for it.
 - **Key insight:** no match-sheet crawling needed. Two players co-played iff
-  they share a match ID and their on-pitch intervals intersect; overlap minutes
-  = interval intersection length. Freshness = sum of minutes in the trailing
-  365-day window. One scrape serves both analyses.
+  they share a match ID (deterministic & player-independent: date+team+opponent).
+  Freshness = sum of minutes in the trailing 365-day window. One scrape serves
+  both analyses.
 - **Team strength:** [ClubElo](http://clubelo.com/API) free API for club Elo
   ratings (replaces the defunct FiveThirtyEight SPI used in 2021); Elo/FIFA
   national-team ratings for internationals.
-- **Fallback:** if TM sub-minute detail is patchy for some leagues, patch gaps
-  from Sofascore/FotMob unofficial endpoints.
+- **FBref is unusable** — returns 403 since the Jan 2026 shutdown. The TM
+  `ceapi/player/<id>/performance` JSON endpoint exists but gives only
+  per-competition season aggregates, not per-match rows.
 
 Scraping etiquette: throttled requests, retry with backoff, identifying UA,
 raw HTML cached to `data/raw/` (gitignored, never re-fetched, never
@@ -71,12 +80,14 @@ These are the reusable public artifacts (parquet + CSV in `data/`).
 
 Per squad, weighted undirected graph over the 26 players:
 
-- **Edge weight** = shared on-pitch minutes × competition-tier weight ×
+- **Edge weight** = shared appearances × competition-tier weight ×
   recency decay × team-strength weight (ClubElo / national Elo) — same
-  heuristic family as the Euro 2020 piece (which used SPI). Tier weights and
-  the decay half-life are named constants in one config module, and raw
-  unweighted shared minutes are always retained alongside the weighted edge
-  so the heuristic can be tuned without re-deriving data.
+  heuristic family as the Euro 2020 piece (which used SPI), but the base unit
+  is shared appearances rather than shared minutes (sub-minute data no longer
+  exists). Tier weights and the decay half-life are named constants in one
+  config module, and the raw unweighted shared-appearance count is always
+  retained alongside the weighted edge so the heuristic can be tuned without
+  re-deriving data.
 - **Squad metrics:** density and triadic closure / clustering coefficient
   (for direct continuity with Euro 2020), plus the previously-deferred
   centrality work: weighted degree (squad "connector") and betweenness
