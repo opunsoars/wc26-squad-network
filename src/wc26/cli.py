@@ -8,6 +8,7 @@ from typing import Any
 
 import pandas as pd
 import structlog
+import tqdm
 import typer
 
 from wc26.config import RAW_CACHE_DIR, TOURNAMENT_DATE
@@ -39,15 +40,14 @@ def squads(
 
 @app.command()
 def matchlogs(
-    cache_dir: str = typer.Option(RAW_CACHE_DIR, help="Raw HTML cache dir"),
+    cache_dir: str = typer.Option(RAW_CACHE_DIR, help="Raw cache dir"),
     db: str = typer.Option(_DEFAULT_DB, help="DuckDB file path"),
-    headless: bool = typer.Option(True, help="Run Chromium headless"),
     resume: bool = typer.Option(False, "--resume", help="Skip players already in DB"),
 ) -> None:
-    """Render TM performance pages and append match logs to DuckDB.
+    """Fetch TM match logs via JSON API and append to DuckDB.
 
-    Use --resume to continue an interrupted run without re-scraping
-    players whose logs are already stored.
+    Writes to DuckDB after every player so progress is queryable at any time.
+    Use --resume to skip players whose logs are already stored.
     """
     store = Store(db)
     all_players = store.all_players()
@@ -60,12 +60,13 @@ def matchlogs(
         players = all_players
 
     total_new = 0
-    for i, player in enumerate(players, 1):
-        logs = fetch_player_matchlogs(player, cache_dir=cache_dir, headless=headless)
-        if logs:
-            store.append_match_logs(logs)
-            total_new += len(logs)
-        typer.echo(f"[{i}/{len(players)}] {player.name} ({player.squad}): {len(logs)} rows")
+    with tqdm.tqdm(players, unit="player", desc="match logs") as bar:
+        for player in bar:
+            bar.set_postfix_str(f"{player.name} ({player.squad})")
+            logs = fetch_player_matchlogs(player, cache_dir=cache_dir)
+            if logs:
+                store.append_match_logs(logs)
+                total_new += len(logs)
 
     store.close()
     typer.echo(f"Done. {total_new} new match-log rows written to {db}")
@@ -194,7 +195,7 @@ def run_all(
     typer.echo("Running: squads")
     squads(cache_dir=cache_dir, db=db)
     typer.echo("Running: matchlogs")
-    matchlogs(cache_dir=cache_dir, db=db, headless=True, resume=resume)
+    matchlogs(cache_dir=cache_dir, db=db, resume=resume)
     typer.echo("Running: metrics")
     metrics(db=db, out_dir="site/data")
     typer.echo("Running: export")
