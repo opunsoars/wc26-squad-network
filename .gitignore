@@ -1,0 +1,10 @@
+data/raw/
+site/data/
+__pycache__/
+*.pyc
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+.venv/
