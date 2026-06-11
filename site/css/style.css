@@ -1,108 +1,174 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-  background: #0d1117;
-  color: #e6edf3;
-  line-height: 1.5;
+:root {
+  --bg: #faf9f7;
+  --surface: #ffffff;
+  --surface-alt: #f3f1ed;
+  --border: #e5e2db;
+  --border-strong: #c9c6be;
+  --text-primary: #1a1917;
+  --text-secondary: #5c5a56;
+  --text-muted: #9a9891;
+  --accent: #d4380d;
+  --accent-light: #fff1ed;
+  --link: #1a5fa8;
+  --gk: #d48b07;
+  --df: #1a5fa8;
+  --mf: #2d7a3f;
+  --fw: #c0362c;
 }
 
-a { color: #58a6ff; text-decoration: none; }
+body {
+  font-family: "Georgia", "Times New Roman", serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+a { color: var(--link); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
 /* ── Header ─────────────────────────────────────────────────────────────────── */
 header {
   padding: 1.25rem 2rem;
-  border-bottom: 1px solid #21262d;
-  background: #010409;
+  border-bottom: 2px solid var(--text-primary);
+  background: var(--surface);
 }
-header h1 { font-size: 1.3rem; font-weight: 600; }
-header p { color: #8b949e; font-size: 0.85rem; margin-top: 0.2rem; }
-header strong { color: #e6edf3; }
+.site-wordmark {
+  font-size: 11px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+header p {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  margin-top: 0.25rem;
+}
+header strong { color: var(--text-primary); font-weight: 600; }
 
 /* ── Layout ─────────────────────────────────────────────────────────────────── */
-main { max-width: 1200px; margin: 0 auto; padding: 1.5rem 2rem 3rem; }
+main { max-width: 1100px; margin: 0 auto; padding: 2rem 2rem 4rem; }
+
+.section-label {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
 
 .section-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: #c9d1d9;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.6rem;
 }
 
 .chart-container {
-  background: #161b22;
-  border: 1px solid #21262d;
-  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
   padding: 1.5rem;
   margin-bottom: 1.75rem;
-  overflow: hidden;
 }
 
 /* ── Axes ───────────────────────────────────────────────────────────────────── */
-.axis text { fill: #8b949e; font-size: 11px; }
-.axis path, .axis line { stroke: #30363d; }
+.axis text {
+  fill: var(--text-secondary);
+  font-size: 11px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.axis path, .axis line { stroke: var(--border); }
+.grid line { stroke: var(--border); stroke-dasharray: 2,3; }
 
 /* ── Back link ──────────────────────────────────────────────────────────────── */
 .back-link {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  margin-bottom: 1.25rem;
-  color: #8b949e;
-  font-size: 0.85rem;
-  transition: color 0.15s;
+  margin-bottom: 1.5rem;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: color 0.12s;
 }
-.back-link:hover { color: #58a6ff; text-decoration: none; }
+.back-link:hover { color: var(--text-primary); text-decoration: none; }
 
 /* ── Squad grid cards ───────────────────────────────────────────────────────── */
 .squad-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--border);
 }
 
 .squad-card {
-  background: #0d1117;
-  border: 1px solid #21262d;
-  border-radius: 8px;
-  padding: 0.9rem 1rem;
+  background: var(--surface);
+  padding: 0.85rem 1rem;
   cursor: pointer;
-  transition: border-color 0.15s, transform 0.1s;
+  transition: background 0.1s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
-.squad-card:hover {
-  border-color: #58a6ff;
-  transform: translateY(-1px);
-}
+.squad-card:hover { background: var(--accent-light); }
 
 .card-rank {
-  font-size: 0.7rem;
-  color: #484f58;
-  font-weight: 600;
-  margin-bottom: 0.15rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+.card-flag {
+  font-size: 1.1rem;
+  line-height: 1;
 }
 .card-name {
-  font-weight: 600;
-  font-size: 0.9rem;
-  margin-bottom: 0.5rem;
-  color: #e6edf3;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  line-height: 1.25;
 }
 .card-bar-bg {
-  height: 4px;
-  background: #21262d;
-  border-radius: 2px;
-  margin-bottom: 0.5rem;
-  overflow: hidden;
+  height: 3px;
+  background: var(--border);
+  border-radius: 0;
 }
 .card-bar-fill {
   height: 100%;
-  border-radius: 2px;
+  background: var(--accent);
 }
 .card-stats {
   display: flex;
   justify-content: space-between;
-  font-size: 0.75rem;
-  color: #8b949e;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 10px;
+  color: var(--text-muted);
 }
 
 /* ── Network SVG ────────────────────────────────────────────────────────────── */
@@ -110,14 +176,96 @@ main { max-width: 1200px; margin: 0 auto; padding: 1.5rem 2rem 3rem; }
   width: 100%;
   display: block;
 }
-
-.network-svg .node circle {
-  stroke: #0d1117;
-  stroke-width: 1.5;
-}
 .network-svg .node text {
   pointer-events: none;
 }
 
 /* ── Freshness bars SVG ─────────────────────────────────────────────────────── */
 #freshness-bars { display: block; width: 100%; overflow: visible; }
+
+/* ── Position legend dots ───────────────────────────────────────────────────── */
+.pos-gk { fill: var(--gk); }
+.pos-df { fill: var(--df); }
+.pos-mf { fill: var(--mf); }
+.pos-fw { fill: var(--fw); }
+
+/* ── Nav / About page ───────────────────────────────────────────────────────── */
+nav {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 0.4rem;
+  display: flex;
+  gap: 1.25rem;
+}
+nav a { color: var(--text-secondary); }
+nav a:hover, nav a.active { color: var(--accent); text-decoration: none; }
+
+.prose {
+  font-size: 15px;
+  line-height: 1.75;
+  max-width: 680px;
+}
+.prose h2 {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 2rem 0 0.6rem;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 10px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.4rem;
+}
+.prose p { margin-bottom: 1rem; color: var(--text-secondary); }
+.prose strong { color: var(--text-primary); font-weight: 700; }
+.prose ul { margin: 0 0 1rem 1.25rem; color: var(--text-secondary); }
+.prose li { margin-bottom: 0.35rem; }
+.prose code {
+  font-family: "SF Mono", "Fira Code", monospace;
+  font-size: 12px;
+  background: var(--surface-alt);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--text-primary);
+}
+
+/* ── Tooltip override for network ───────────────────────────────────────────── */
+#network-tooltip {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: 3px !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12) !important;
+}
+
+/* ── Striped table for about/methodology ────────────────────────────────────── */
+.data-table {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+.data-table th {
+  text-align: left;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-strong);
+  padding: 0.4rem 0.75rem 0.4rem 0;
+}
+.data-table td {
+  padding: 0.45rem 0.75rem 0.45rem 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  vertical-align: top;
+}
+.data-table tr:last-child td { border-bottom: none; }

@@ -3,24 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WC26 Squad Freshness &amp; Familiarity</title>
+  <title>WC26 Squad Networks</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <header>
-    <h1>World Cup 2026 — Squad Freshness &amp; Familiarity</h1>
-    <p>Minutes played in the last 365 days &amp; on-pitch co-play networks for all 48 squads</p>
+    <div class="site-wordmark">World Cup 2026 Analysis</div>
+    <h1>Squad Freshness &amp; Familiarity</h1>
+    <p>Minutes played in the last 365 days &amp; co-play networks for all 48 squads</p>
+    <nav>
+      <a href="index.html" class="active">Squads</a>
+      <a href="about.html">Methodology</a>
+    </nav>
   </header>
   <main>
     <div class="chart-container">
-      <div class="section-title">Squad Freshness vs Network Density</div>
+      <div class="section-label">Scatter</div>
+      <div class="section-title">Freshness vs Network Density — all 48 squads</div>
       <svg id="scatter" width="860" height="400"></svg>
     </div>
     <div class="chart-container">
-      <div class="section-title">All Squads — Average Player Minutes (Last 365 Days)</div>
-      <svg id="freshness-bar" width="860" height="420"></svg>
+      <div class="section-label">Bar chart</div>
+      <div class="section-title">Average player freshness by squad — hours played in last 365 days</div>
+      <svg id="freshness-bar" width="860" height="380"></svg>
     </div>
-    <div class="section-title">Browse by Squad</div>
+    <div class="section-label" style="margin-top:0.5rem">All squads</div>
     <div class="squad-grid" id="squad-grid"></div>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>

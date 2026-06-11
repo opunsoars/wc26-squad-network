@@ -2,13 +2,13 @@ function renderNetwork(data) {
   const svgEl = document.getElementById("network");
   if (!svgEl || !data) return;
 
-  // Use a fixed coordinate space; CSS scales it to container width via viewBox
   const width = 900;
   const height = 520;
   svgEl.setAttribute("viewBox", `0 0 ${width} ${height}`);
   svgEl.setAttribute("width", "100%");
   svgEl.setAttribute("height", height);
   svgEl.style.display = "block";
+  svgEl.style.background = "#faf9f7";
 
   const svg = d3.select("#network");
   svg.selectAll("*").remove();
@@ -36,7 +36,8 @@ function renderNetwork(data) {
     svg.append("text")
       .attr("x", width / 2).attr("y", height / 2)
       .attr("text-anchor", "middle")
-      .style("fill", "#8b949e").style("font-size", "14px")
+      .style("fill", "#9a9891").style("font-size", "13px")
+      .style("font-family", "sans-serif")
       .text("No co-play edges for this squad in the analysis window");
     return;
   }
@@ -44,35 +45,29 @@ function renderNetwork(data) {
   const maxVal = d3.max(links, d => d.value) || 1;
   const maxFresh = d3.max(nodes, d => d.freshness) || 1;
 
-  const strokeScale = d3.scalePow().exponent(0.5).domain([0, maxVal]).range([0.4, 5]);
+  const strokeScale = d3.scalePow().exponent(0.5).domain([0, maxVal]).range([0.5, 4]);
   const rScale = d3.scaleSqrt().domain([0, maxFresh]).range([5, 16]);
-  const opacityScale = d3.scaleLinear().domain([0, maxVal]).range([0.08, 0.55]);
+  const opacityScale = d3.scaleLinear().domain([0, maxVal]).range([0.06, 0.45]);
 
-  const posColor = { GK: "#f0b429", DF: "#4dabf7", MF: "#69db7c", FW: "#ff6b6b" };
-  const posLabel = { GK: "Goalkeeper", DF: "Defender", MF: "Midfielder", FW: "Forward" };
+  // Position colours: muted, editorial palette
+  const posColor  = { GK: "#d48b07", DF: "#1a5fa8", MF: "#2d7a3f", FW: "#c0362c" };
+  const posLabel  = { GK: "Goalkeeper", DF: "Defender", MF: "Midfielder", FW: "Forward" };
+  const edgeColor = "#b0aca4";
+  const edgeHl    = "#d4380d";
 
-  // Defs: glow filter
-  const defs = svg.append("defs");
-  const filter = defs.append("filter").attr("id", "glow");
-  filter.append("feGaussianBlur").attr("stdDeviation", "3").attr("result", "coloredBlur");
-  const feMerge = filter.append("feMerge");
-  feMerge.append("feMergeNode").attr("in", "coloredBlur");
-  feMerge.append("feMergeNode").attr("in", "SourceGraphic");
-
-  // Build adjacency set so isolated nodes can get extra gravity
   const connected = new Set(links.flatMap(l => [l.source, l.target]));
 
   const sim = d3.forceSimulation(nodes)
-    .force("link", d3.forceLink(links).id(d => d.id).distance(70).strength(d => (d.value / maxVal) * 0.5))
-    .force("charge", d3.forceManyBody().strength(-180))
-    .force("center", d3.forceCenter(width / 2, height / 2))
+    .force("link",      d3.forceLink(links).id(d => d.id).distance(75).strength(d => (d.value / maxVal) * 0.45))
+    .force("charge",    d3.forceManyBody().strength(-200))
+    .force("center",    d3.forceCenter(width / 2, height / 2))
     .force("collision", d3.forceCollide(d => rScale(d.freshness) + 4))
     .force("isolatedX", d3.forceX(width / 2).strength(d => connected.has(d.id) ? 0 : 0.15))
     .force("isolatedY", d3.forceY(height / 2).strength(d => connected.has(d.id) ? 0 : 0.15));
 
   const linkGroup = svg.append("g").attr("class", "links");
   const link = linkGroup.selectAll("line").data(links).join("line")
-    .attr("stroke", "#58a6ff")
+    .attr("stroke", edgeColor)
     .attr("stroke-opacity", d => opacityScale(d.value))
     .attr("stroke-width", d => strokeScale(d.value));
 
@@ -83,29 +78,28 @@ function renderNetwork(data) {
     .call(
       d3.drag()
         .on("start", (event, d) => { if (!event.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
-        .on("drag", (event, d) => { d.fx = event.x; d.fy = event.y; })
-        .on("end", (event, d) => { if (!event.active) sim.alphaTarget(0); d.fx = null; d.fy = null; })
+        .on("drag",  (event, d) => { d.fx = event.x; d.fy = event.y; })
+        .on("end",   (event, d) => { if (!event.active) sim.alphaTarget(0); d.fx = null; d.fy = null; })
     );
 
   node.append("circle")
     .attr("r", d => rScale(d.freshness))
-    .attr("fill", d => posColor[d.position] || "#8b949e")
-    .attr("fill-opacity", 0.88)
-    .attr("stroke", "#0d1117")
+    .attr("fill", d => posColor[d.position] || "#9a9891")
+    .attr("fill-opacity", 0.82)
+    .attr("stroke", "#faf9f7")
     .attr("stroke-width", 1.5);
 
-  // Short label: last token when splitting on spaces (skip hyphenated suffixes)
   node.append("text")
     .attr("dy", "0.35em")
     .attr("text-anchor", "middle")
-    .style("font-size", d => rScale(d.freshness) > 10 ? "9px" : "0")
-    .style("fill", "#0d1117")
-    .style("font-weight", "600")
+    .style("font-size", d => rScale(d.freshness) > 10 ? "8px" : "0")
+    .style("fill", "#ffffff")
+    .style("font-family", "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif")
+    .style("font-weight", "700")
     .style("pointer-events", "none")
     .text(d => {
       const parts = d.name.trim().split(/\s+/);
-      const last = parts[parts.length - 1];
-      // Truncate to 6 chars to fit inside node
+      const last  = parts[parts.length - 1];
       return last.length > 6 ? last.slice(0, 6) : last;
     });
 
@@ -116,92 +110,92 @@ function renderNetwork(data) {
     : tooltip;
 
   tip.style("position", "absolute")
-    .style("background", "#161b22")
-    .style("border", "1px solid #30363d")
-    .style("border-radius", "6px")
-    .style("padding", "0.6rem 0.9rem")
+    .style("background", "#ffffff")
+    .style("border", "1px solid #c9c6be")
+    .style("border-radius", "3px")
+    .style("padding", "0.55rem 0.8rem")
     .style("font-size", "12px")
+    .style("font-family", "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif")
     .style("pointer-events", "none")
     .style("opacity", 0)
     .style("z-index", "100")
-    .style("line-height", "1.6");
+    .style("line-height", "1.55")
+    .style("box-shadow", "0 2px 8px rgba(0,0,0,0.1)");
 
   node
     .on("mouseover", (event, d) => {
-      // Highlight connected edges
       link
-        .attr("stroke-opacity", l =>
-          l.source.id === d.id || l.target.id === d.id ? 0.85 : 0.04)
-        .attr("stroke", l =>
-          l.source.id === d.id || l.target.id === d.id ? "#f0b429" : "#58a6ff");
+        .attr("stroke-opacity", l => l.source.id === d.id || l.target.id === d.id ? 0.85 : 0.04)
+        .attr("stroke", l => l.source.id === d.id || l.target.id === d.id ? edgeHl : edgeColor);
       node.select("circle")
         .attr("fill-opacity", n => {
           if (n.id === d.id) return 1;
-          const connected = links.some(l =>
+          const adj = links.some(l =>
             (l.source.id === d.id && l.target.id === n.id) ||
             (l.target.id === d.id && l.source.id === n.id));
-          return connected ? 1 : 0.25;
+          return adj ? 1 : 0.2;
         });
 
-      const mins = d.freshness.toLocaleString();
-      const hours = (d.freshness / 90).toFixed(0);
-      tip.transition().duration(100).style("opacity", 1);
+      const mins = d.freshness > 0 ? d.freshness.toLocaleString() + " min" : "No data in window";
+      const apps = d.freshness > 0 ? ` (~${Math.round(d.freshness / 90)} apps)` : "";
+      tip.transition().duration(80).style("opacity", 1);
       tip.html(`
-        <strong style="color:#e6edf3">${d.name}</strong><br/>
-        <span style="color:${posColor[d.position] || '#8b949e'}">${posLabel[d.position] || d.position}</span>
-        · ${d.club}<br/>
-        <span style="color:#8b949e">Freshness: </span>${mins} min <span style="color:#8b949e">(~${hours} apps)</span>
+        <span style="font-weight:700;color:#1a1917">${d.name}</span><br/>
+        <span style="color:${posColor[d.position] || '#9a9891'};font-weight:600">${posLabel[d.position] || d.position}</span>
+        <span style="color:#9a9891"> · ${d.club}</span><br/>
+        <span style="color:#5c5a56">${mins}${apps}</span>
       `).style("left", `${event.pageX + 14}px`).style("top", `${event.pageY - 10}px`);
     })
     .on("mousemove", event => {
       tip.style("left", `${event.pageX + 14}px`).style("top", `${event.pageY - 10}px`);
     })
     .on("mouseout", () => {
-      link.attr("stroke-opacity", d => opacityScale(d.value)).attr("stroke", "#58a6ff");
-      node.select("circle").attr("fill-opacity", 0.88);
-      tip.transition().duration(200).style("opacity", 0);
+      link.attr("stroke-opacity", d => opacityScale(d.value)).attr("stroke", edgeColor);
+      node.select("circle").attr("fill-opacity", 0.82);
+      tip.transition().duration(150).style("opacity", 0);
     });
 
-  // Run simulation to near-equilibrium synchronously so the initial render
-  // is already settled (avoids blank state in screenshots / slow connections)
   sim.stop();
   for (let i = 0; i < 300; i++) sim.tick();
 
-  const clamp = (d) => {
+  const clamp = d => {
     const r = rScale(d.freshness) + 2;
     d.x = Math.max(r, Math.min(width - r, d.x));
     d.y = Math.max(r, Math.min(height - r, d.y));
   };
   nodes.forEach(clamp);
 
-  // Draw initial settled positions
-  link
-    .attr("x1", d => d.source.x).attr("y1", d => d.source.y)
-    .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+  link.attr("x1", d => d.source.x).attr("y1", d => d.source.y)
+      .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
   node.attr("transform", d => `translate(${d.x},${d.y})`);
 
-  // Then re-enable live ticking for interactivity (drag etc.)
   sim.restart();
   sim.on("tick", () => {
     nodes.forEach(clamp);
-    link
-      .attr("x1", d => d.source.x).attr("y1", d => d.source.y)
-      .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+    link.attr("x1", d => d.source.x).attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
     node.attr("transform", d => `translate(${d.x},${d.y})`);
   });
 
-  // Legend
-  const legend = svg.append("g").attr("transform", `translate(16, 16)`);
-  const positions = ["GK", "DF", "MF", "FW"];
-  positions.forEach((pos, i) => {
-    const row = legend.append("g").attr("transform", `translate(0, ${i * 20})`);
-    row.append("circle").attr("r", 6).attr("cx", 6).attr("cy", 0)
-      .attr("fill", posColor[pos]).attr("fill-opacity", 0.88).attr("stroke", "#0d1117").attr("stroke-width", 1);
-    row.append("text").attr("x", 16).attr("dy", "0.35em")
-      .style("font-size", "11px").style("fill", "#8b949e").text(posLabel[pos]);
+  // Position legend
+  const legend = svg.append("g").attr("transform", "translate(16, 16)");
+  ["GK", "DF", "MF", "FW"].forEach((pos, i) => {
+    const row = legend.append("g").attr("transform", `translate(0, ${i * 18})`);
+    row.append("circle").attr("r", 5).attr("cx", 5).attr("cy", 0)
+      .attr("fill", posColor[pos]).attr("fill-opacity", 0.85);
+    row.append("text").attr("x", 14).attr("dy", "0.35em")
+      .style("font-size", "10px")
+      .style("font-family", "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif")
+      .style("fill", "#5c5a56")
+      .text(posLabel[pos]);
   });
 
-  // Node size legend
-  const sizeLegend = svg.append("g").attr("transform", `translate(${width - 100}, 16)`);
-  sizeLegend.append("text").attr("dy", "0.35em").style("font-size", "10px").style("fill", "#8b949e").text("Node size = freshness");
+  // Size note
+  svg.append("text")
+    .attr("x", width - 12).attr("y", 20)
+    .attr("text-anchor", "end")
+    .style("font-size", "9px")
+    .style("font-family", "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif")
+    .style("fill", "#9a9891")
+    .text("Node size = freshness (minutes played, last 365 days)");
 }

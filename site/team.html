@@ -3,23 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WC26 Team</title>
+  <title>WC26 Squad</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <header>
+    <div class="site-wordmark">World Cup 2026 Analysis</div>
     <h1 id="team-title">Squad</h1>
     <p id="team-subtitle"></p>
+    <nav>
+      <a href="index.html">Squads</a>
+      <a href="about.html">Methodology</a>
+    </nav>
   </header>
   <main>
     <a class="back-link" href="index.html">← All squads</a>
     <div class="chart-container">
-      <div class="section-title">Player Freshness — Minutes in Last 365 Days</div>
+      <div class="section-label">Player freshness</div>
+      <div class="section-title">Minutes played in last 365 days</div>
       <svg id="freshness-bars" width="860" height="500"></svg>
     </div>
     <div class="chart-container">
-      <div class="section-title">Squad Familiarity Network</div>
-      <svg class="network-svg" id="network"></svg>
+      <div class="section-label">Familiarity network</div>
+      <div class="section-title">Co-play connections — 2023/24 to 2025/26</div>
+      <svg class="network-svg" id="network" style="background:#faf9f7"></svg>
     </div>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>

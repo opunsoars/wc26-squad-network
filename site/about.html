@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Methodology — WC26 Squad Networks</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <div class="site-wordmark">World Cup 2026 Analysis</div>
+    <h1>Methodology</h1>
+    <p>How we measure squad freshness and familiarity</p>
+    <nav>
+      <a href="index.html">Squads</a>
+      <a href="about.html" class="active">Methodology</a>
+    </nav>
+  </header>
+  <main>
+    <div class="prose">
+
+      <h2>What this is</h2>
+      <p>
+        Two complementary angles on World Cup 2026 squad readiness: <strong>freshness</strong>
+        — how much competitive football each player has played in the 365 days before the tournament —
+        and <strong>familiarity</strong> — how much time team-mates have spent on the pitch together
+        over the past three seasons.
+      </p>
+      <p>
+        The idea is borrowed from football analytics: a squad full of match-sharp players who have
+        repeatedly played alongside each other is, all else equal, better prepared than one whose
+        stars arrive carrying injury time or have never shared a club dressing room.
+      </p>
+
+      <h2>Freshness</h2>
+      <p>
+        For each player we collect every competitive appearance recorded on
+        <a href="https://www.transfermarkt.com" target="_blank">Transfermarkt</a> in the
+        365-day window ending on the day data was collected (June 2026).
+        <strong>Freshness</strong> is the total <em>minutes played</em> in that window.
+      </p>
+      <p>Players showing <em>"no data in window"</em> fall into one of two categories:</p>
+      <ul>
+        <li><strong>Genuinely inactive</strong> — injured or not registered for the full window
+            (e.g. Lucas Hernandez, long-term ACL).</li>
+        <li><strong>Data gap</strong> — Transfermarkt's API does not carry appearances for some
+            leagues (certain Asian, African or CONCACAF competitions have incomplete coverage).</li>
+      </ul>
+
+      <h2>Familiarity network</h2>
+      <p>
+        For every pair of players within a squad we count the minutes they were
+        <em>simultaneously on the pitch in the same match</em> across the three most recent
+        full seasons: <strong>2023/24, 2024/25, and 2025/26</strong>.
+      </p>
+      <p>
+        The <strong>raw co-play minutes</strong> are then weighted by recency: the current
+        season (2025/26) counts at full weight, last season at 0.7×, and the season before
+        at 0.5×. This reflects the reality that team chemistry built last month matters more
+        than games played two years ago.
+      </p>
+      <p>
+        The result is an undirected weighted graph — a <strong>familiarity network</strong>
+        — for each squad. Edge thickness and opacity in the visualisation encode weighted
+        co-play minutes.
+      </p>
+
+      <h2>Network metrics</h2>
+      <table class="data-table">
+        <thead>
+          <tr><th>Metric</th><th>Definition</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Density</strong></td>
+            <td>
+              Share of all possible edges that actually exist (i.e. pairs who have played
+              together at least once). A squad of 26 has 325 possible pairs; density = edges / 325.
+              Higher = more players with shared experience.
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Clustering</strong></td>
+            <td>
+              Average local clustering coefficient — how often a player's team-mates also
+              play with each other. High clustering indicates tight sub-groups (e.g. a
+              dominant club providing several starters).
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Data sources</h2>
+      <table class="data-table">
+        <thead>
+          <tr><th>Source</th><th>Used for</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Wikipedia — <em>2026 FIFA World Cup squads</em></td>
+            <td>Official squad lists, player names, positions, clubs, shirt numbers</td>
+          </tr>
+          <tr>
+            <td>Transfermarkt API (<code>tmapi.transfermarkt.technology</code>)</td>
+            <td>Full match-by-match appearance records per player including minutes played,
+                substitution times, and competition</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Limitations</h2>
+      <ul>
+        <li>
+          <strong>Club-only appearances</strong> — international matches are included only
+          if Transfermarkt records them under the player's profile (most are).
+          Friendly appearances are excluded.
+        </li>
+        <li>
+          <strong>Co-play at club level only</strong> — two players who have only faced each
+          other as opponents, or who played together at international level but never at
+          the same club, will show no edge. Club familiarity is the dominant signal.
+        </li>
+        <li>
+          <strong>No tactical context</strong> — minutes together ≠ minutes playing in the
+          same system or same positions. A full-back and striker may log 2,000 co-play minutes
+          without ever meaningfully interacting on the pitch.
+        </li>
+        <li>
+          <strong>Transfermarkt coverage gaps</strong> — some leagues (Saudi Pro League,
+          Egyptian Premier League, certain CONCACAF leagues) have incomplete or no minute-level
+          data in the window.
+        </li>
+      </ul>
+
+      <h2>Built with</h2>
+      <ul>
+        <li>Python 3.12 · <code>httpx</code> for HTTP · <code>beautifulsoup4</code> for HTML parsing</li>
+        <li><code>DuckDB</code> for local analytical storage</li>
+        <li><code>NetworkX</code> for graph metrics (density, clustering coefficient)</li>
+        <li>D3.js v7 for all visualisations</li>
+      </ul>
+
+      <h2>About</h2>
+      <p>
+        Built by <strong>Vinay Sukumar Warrier</strong> as a follow-up to a
+        Euro 2020 squad-network analysis. The code is open source at
+        <a href="https://github.com/opunsoars/wc26-squad-network" target="_blank">github.com/opunsoars/wc26-squad-network</a>.
+      </p>
+
+    </div>
+  </main>
+</body>
+</html>
